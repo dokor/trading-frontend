@@ -1,0 +1,38 @@
+name: Build Back-Office
+
+trigger: none
+
+pool:
+  vmImage: "ubuntu-latest"
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: DS_environnement/azure-pipelines-templates
+      ref: refs/tags/3.10.2
+
+variables:
+  front_src_path: $(Build.SourcesDirectory)
+  YARN_CACHE_FOLDER: $(Pipeline.Workspace)/.yarn
+  pkg_manager: "yarn"
+
+  SKIP_CI_FILTER: "[skip ci]"
+
+stages:
+  - stage: Build
+    condition: not(contains(variables['Build.SourceVersionMessage'], variables['SKIP_CI_FILTER']))
+    jobs:
+      - template: jobs/front/build.yml@templates
+        parameters:
+          pkg_manager: ${{ variables.pkg_manager }}
+          front_src_path: $(FRONT_SRC_PATH)
+          front_build_dir: ""
+
+  - stage: Test
+    condition: and(succeeded(), not(contains(variables['Build.SourceVersionMessage'], variables['SKIP_CI_FILTER'])))
+    jobs:
+      - template: jobs/front/test.yml@templates
+        parameters:
+          pkg_manager: ${{ variables.pkg_manager }}
+          front_src_path: $(FRONT_SRC_PATH)

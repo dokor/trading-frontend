@@ -1,0 +1,106 @@
+name: Build Back-Office
+
+pool:
+  vmImage: "ubuntu-latest"
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: DS_environnement/azure-pipelines-templates
+      ref: refs/heads/stable
+    - repository: ansible
+      type: git
+      name: DS_environnement/DEPLOY_branch
+      ref: refs/tags/1.2
+
+variables:
+  front_src_path: $(Build.SourcesDirectory)
+  YARN_CACHE_FOLDER: $(Pipeline.Workspace)/.yarn
+  pkg_manager: "yarn"
+
+  ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+    RELEASE_TYPE: 'snapshot'
+    docker_build: true
+    deploy_to: aws_dev
+  ${{ if contains(variables['Build.SourceBranch'], 'heads/release') }}:
+    RELEASE_TYPE: 'release'
+    docker_build: true
+  ${{ if contains(variables['Build.SourceBranch'], 'heads/hotfix') }}:
+    RELEASE_TYPE: 'snapshot'
+  ${{ if contains(variables['Build.SourceBranch'], 'heads/fix') }}:
+    RELEASE_TYPE: 'snapshot'
+
+  image_name: front-rel-bo-ui
+  deploy_type: docker
+  repository_type: ecr
+  stack_name: front
+  SKIP_CI_FILTER: "[skip ci]"
+
+stages:
+  - stage: Eligibility
+    condition: not(contains(variables['Build.SourceVersionMessage'], variables['SKIP_CI_FILTER']))
+    jobs:
+      - template: jobs/docker/lint.yml@templates
+        parameters:
+          dockerfile: Dockerfile
+      - template: jobs/front/eligibility.yml@templates
+        parameters:
+          front_src_path: $(front_src_path)
+          pkg_manager: ${{ variables.pkg_manager }}
+          ${{ if ne(variables['RELEASE_TYPE'], '') }}:
+            release_type: $(RELEASE_TYPE)
+  - stage: Build
+    condition: and(succeeded(), not(contains(variables['Build.SourceVersionMessage'], variables['SKIP_CI_FILTER'])))
+    jobs:
+      - template: jobs/front/build.yml@templates
+        parameters:
+          pkg_manager: ${{ variables.pkg_manager }}
+          front_src_path: $(FRONT_SRC_PATH)
+          front_build_dir: ""
+
+  - stage: Test
+    condition: and(succeeded(), not(contains(variables['Build.SourceVersionMessage'], variables['SKIP_CI_FILTER'])))
+    jobs:
+      - template: jobs/front/test.yml@templates
+        parameters:
+          pkg_manager: ${{ variables.pkg_manager }}
+          front_src_path: $(FRONT_SRC_PATH)
+
+  - stage: Release
+    condition: and(succeeded(), not(contains(variables['Build.SourceVersionMessage'], variables['SKIP_CI_FILTER'])))
+    jobs:
+      - template: jobs/front/release_2.yml@templates
+        parameters:
+          front_src_path: $(front_src_path)
+          pkg_manager: ${{ variables.pkg_manager }}
+          ${{ if ne(variables['release_type'], '') }}:
+            release_type: $(RELEASE_TYPE)
+
+  - stage: Publish
+    condition: and(succeeded(), not(contains(variables['Build.SourceVersionMessage'], variables['SKIP_CI_FILTER'])))
+    jobs:
+      - template: jobs/misc/publish.yml@templates
+        parameters:
+          image_name: $(image_name)
+          deploy_type: $(deploy_type)
+          stack_name: $(stack_name)
+          ${{ if ne(variables['deploy_to'], '') }}:
+            deploy_to: $(deploy_to)
+
+  - stage: Docker
+    condition: and(succeeded(), not(contains(variables['Build.SourceVersionMessage'], variables['SKIP_CI_FILTER'])))
+    jobs:
+      - template: jobs/docker/docker.yml@templates
+        parameters:
+          image_name: ${{ variables.image_name }}
+          repository_type: ${{ variables.repository_type }}
+
+  - ${{ if ne(variables['deploy_to'], '') }}:
+      - stage: Deploy
+        condition: and(succeeded(), not(contains(variables['Build.SourceVersionMessage'], variables['SKIP_CI_FILTER'])))
+        jobs:
+          - template: jobs/docker/ansible_deploy.yml@templates
+            ${{ if ne(variables['deploy_to'], '') }}:
+              parameters:
+                deploy_to: $(deploy_to)

@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  rel-bo-ui:
+    image: ${IMAGE}
+    environment:
+      - PROFILE=${PROFILE:-local}
+      - BACKEND_SERVICE=rel-backend:8080
+    networks:
+      - traefik-network
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.rel-bo-ui.rule=Host(`rel-b2b.${PROFILE:-local}.${DOMAIN:-compagniedesalpes.fr}`, `b2b.serrechevalier-pass.com`) && PathPrefix(`/admin`)
+        - traefik.http.routers.rel-bo-ui.entrypoints=http,https
+        - traefik.http.routers.rel-bo-ui.tls=true
+        - traefik.http.routers.rel-bo-ui.tls.certresolver=letsencrypt
+        - traefik.http.services.rel-bo-ui-services.loadbalancer.server.port=80
+
+networks:
+  traefik-network:
+    name: traefik-network
+    external: true

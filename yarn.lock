@@ -10647,6 +10647,7 @@ typescript@4.2.4:
     jest-config: ^27.5.1
     jsdom: ^17.0.0
     micro-observables: ^1.7.2
+    minimist: ^1.2.6
     node-fetch: ^2.6.7
     plume-ts-di: ^1.1.1
     react: ^17.0.2

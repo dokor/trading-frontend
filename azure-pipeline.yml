@@ -3,6 +3,15 @@ name: Build Back-Office
 pool:
   vmImage: "ubuntu-latest"
 
+trigger:
+  branches:
+    include:
+      - master
+      - release/*
+      - hotfix/*
+      - fix/*
+      - feature/*
+
 resources:
   repositories:
     - repository: templates

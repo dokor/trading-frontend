@@ -5,8 +5,9 @@ import reactRefresh from '@vitejs/plugin-react-refresh'
 export default defineConfig({
     plugins: [reactRefresh()],
     build: {
-        outDir: 'build/admin'
+        outDir: 'build'
     },
+    base: 'admin',
     server: {
         proxy: {
             '/api': 'http://localhost:8080'

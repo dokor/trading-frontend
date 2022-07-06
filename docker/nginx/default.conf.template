@@ -8,13 +8,13 @@ server {
 
   server_tokens off;
 
-  location /admin/ {
+  location / {
     root   /usr/share/nginx/html;
     index  index.html index.htm;
     try_files $uri $uri/ /index.html;
   }
 
-  location /assets/ {
+  location /assets {
       root   /usr/share/nginx/html;
       index  index.html index.htm;
       try_files /admin/$uri /admin/$uri/ /index.html;

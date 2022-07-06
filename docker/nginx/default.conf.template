@@ -8,10 +8,10 @@ server {
 
   server_tokens off;
 
-  location /admin/ {
+  location ~ ^/admin/(.*)$ {
     root   /usr/share/nginx/html;
     index  index.html index.htm;
-    try_files $uri $uri/ /admin/index.html;
+    try_files $1 $1/ /index.html;
   }
 
   error_page   500 502 503 504  /50x.html;

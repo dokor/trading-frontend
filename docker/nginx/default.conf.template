@@ -11,7 +11,13 @@ server {
   location /admin {
     root   /usr/share/nginx/html;
     index  index.html index.htm;
-    try_files $uri $uri/ /admin/index.html;
+    try_files $uri $uri/ /index.html;
+  }
+
+  location /assets {
+      root   /usr/share/nginx/html;
+      index  index.html index.htm;
+      try_files /admin/$uri /admin/$uri/ /index.html;
   }
 
   error_page   500 502 503 504  /50x.html;

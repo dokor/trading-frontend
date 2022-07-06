@@ -1,6 +1,6 @@
 {
   "name": "vel-b2b-backoffice",
-  "version": "0.1.0-SNAPSHOT",
+  "version": "0.1.0-9-SNAPSHOT",
   "dependencies": {
     "@emotion/react": "^11.4.1",
     "@emotion/styled": "^11.9.3",

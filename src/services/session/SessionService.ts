@@ -40,8 +40,10 @@ export default class SessionService {
     return this.currentUser.readOnly();
   }
 
+  // ToDo vraie authenth
+  // eslint-disable-next-line class-methods-use-this
   isAuthenticated() {
-    return this.currentUser.get() !== undefined;
+    return true;
   }
 
   hasPermission(permission: Permission) {

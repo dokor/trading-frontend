@@ -40,7 +40,7 @@ variables:
   ${{ if contains(variables['Build.SourceBranch'], 'heads/fix') }}:
     RELEASE_TYPE: 'snapshot'
 
-  image_name: front-rel-bo-ui
+  image_name: front-vel-bo-ui
   deploy_type: docker
   repository_type: ecr
   stack_name: front
